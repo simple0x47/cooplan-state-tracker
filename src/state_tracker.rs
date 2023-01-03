@@ -4,6 +4,11 @@ use crate::tracked_data::TrackedData;
 use tokio::net::UnixDatagram;
 use tokio::sync::mpsc::Receiver;
 
+/// Receives state updates from functioning parts of any program
+/// and proceeds to output them through an UnixDatagram socket.
+///
+/// The purpose which it full-fills is to allow microservices to communicate
+/// the current state of all their functionalities easily through a standardized way.
 pub struct StateTracker {
     receiver: Receiver<TrackedData>,
     output_sender: UnixDatagram,
@@ -11,6 +16,12 @@ pub struct StateTracker {
 }
 
 impl StateTracker {
+    /// Tries to create an instance of StateTracker.
+    ///
+    /// # Arguments
+    /// * `output_sender_path` - Path to the UnixDatagram socket that will send the outputs.
+    /// * `output_receiver_path` - Path to the UnixDatagram socket that will receive the outputs.
+    /// * `receiver` - Receiver of TrackedData objects.
     pub fn try_new(
         output_sender_path: &str,
         output_receiver_path: &str,
