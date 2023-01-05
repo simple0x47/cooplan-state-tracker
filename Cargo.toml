@@ -1,6 +1,6 @@
 [package]
 name = "cooplan-state-tracker"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 description = "Tracking utility for tasks' states within Cooplan's microservices"
 license = "MIT"

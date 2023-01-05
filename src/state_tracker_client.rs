@@ -26,6 +26,10 @@ impl StateTrackerClient {
         }
     }
 
+    pub fn set_id(&mut self, id: String) {
+        self.id = id;
+    }
+
     pub async fn send_state(&self, state: State) -> Result<(), Error> {
         // Avoid spamming Idle & Valid states.
         if !state.is_error()
