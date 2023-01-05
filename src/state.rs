@@ -6,3 +6,9 @@ pub enum State {
     Valid,
     Error(String),
 }
+
+impl State {
+    pub fn is_error(&self) -> bool {
+        matches!(self, State::Error(_))
+    }
+}
