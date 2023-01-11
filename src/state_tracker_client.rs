@@ -1,5 +1,7 @@
 use crate::error::{Error, ErrorKind};
 use crate::state::State;
+use crate::state_tracker::StateTracker;
+use crate::state_tracking_config::StateTrackingConfig;
 use crate::tracked_data;
 use crate::tracked_data::TrackedData;
 use tokio::time::Instant;
@@ -13,7 +15,7 @@ pub struct StateTrackerClient {
 }
 
 impl StateTrackerClient {
-    pub fn new(
+    fn new(
         id: String,
         state_sender: tokio::sync::mpsc::Sender<TrackedData>,
         update_interval_in_seconds: u64,
@@ -99,4 +101,31 @@ pub async fn error_state_is_instantly_set() {
         },
         Err(error) => panic!("should have received a state"),
     }
+}
+
+pub async fn build(
+    state_tracking_config: StateTrackingConfig,
+    state_tracking_channel_boundary: usize,
+) -> StateTrackerClient {
+    let (state_sender, state_receiver) =
+        tokio::sync::mpsc::channel(state_tracking_channel_boundary);
+
+    let state_update_interval = state_tracking_config.state_sender_interval_in_seconds;
+
+    tokio::spawn(async move {
+        let state_tracker = match StateTracker::try_new(
+            state_tracking_config.state_output_sender_path.as_str(),
+            state_tracking_config.state_output_receiver_path.as_str(),
+            state_receiver,
+        ) {
+            Ok(state_tracker) => state_tracker,
+            Err(error) => {
+                panic!("failed to initialize state tracker: {}", error);
+            }
+        };
+
+        state_tracker.run().await;
+    });
+
+    StateTrackerClient::new("default".to_string(), state_sender, state_update_interval)
 }
